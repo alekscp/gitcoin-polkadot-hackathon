@@ -1,41 +1,77 @@
 async function backend() {
-  // Import
   const { ApiPromise, WsProvider } = require('@polkadot/api');
 
-  const client = async (provider) => {
-    // Setting up default provider if none provided
-    provider = provider === undefined ? 'wss://rpc.polkadot.io' : provider
-
+  const api = async (provider) => {
     const wsProvider = new WsProvider(provider);
-    const client = new ApiPromise({ provider: wsProvider });
+    const api = new ApiPromise({ provider: wsProvider });
 
-    await client.isReady;
+    await api.isReady;
 
-    return client;
+    return api;
   };
 
+  const fetchBlock = async (options) => {
+    const provider = options.provider || 'wss://rpc.polkadot.io';
+    const number = options.number;
+    const hash = options.hash;
+
+    const client = await api(provider);
+
+    let block;
+    if (number) {
+      const blockHash = await client.rpc.chain.getBlockHash(number)
+
+      block = await client.rpc.chain.getBlock(blockHash);
+    } else if (hash) {
+      block = await client.rpc.chain.getBlock(hash);
+    } else {
+      block = await client.rpc.chain.getBlock();
+    }
+
+    console.log(block.toHuman());
+    process.exit(0);
+  };
+
+  // Extract command line arguments
+  const [ , , ...args] = process.argv;
+
   // CLI
-  if (process.argv[2] == '--help') {
-    console.log('Available options are:\n' +
+  if (args[0] == '--help') {
+    console.log('This CLI tool returns block information for a given Substrate-based chain.\n\n' +
+      'Usage: backend.js [options]\n\n' +
+      'Default behaviour: Returns latest block on the polkadot chain.\n\n' +
+      'Options:\n' +
       '--help: Shows you this menu\n' +
-      '--latest-block [chain]: Returns latest block on `chain`. `chain` defaults to `kusama`\n' +
-      '--search-block-by-number [chain] [number]: Searches for block `number` on `chain`. Defaults to latest block on kusama\n' +
-      '--search-block-by-height [chain] [height]: Searches for block `height` on `chain`. Defaults to latest block on kusama\n'
+      '--provider: Provider address of a Substrate-based chain; eg.: `ws:localhost:9944`\n' +
+      '--number: block number (height)\n' +
+      '--hash: block hash\n'
     );
 
-    process.exit(1);
-  } else if (process.argv[2] == '--latest-block') {
-    const chain = process.argv[3];
+    process.exit(0);
+  } else if (args[0] === '--provider') {
+    const provider = args[1];
 
-    client(chain)
-      .then((api) => api.rpc.chain.getBlock())
-      .then((block) => {
-        console.log('Latest block:', block.toHuman())
-        process.exit(0);
-      });
-  }
-  else {
-    console.log('Unknown command')
+    if (args[1] === '--number') {
+      const number = args[2];
+
+      fetchBlock({provider: provider, number: number});
+    } else if (args[1] === '--hash') {
+      const hash = args[2];
+
+      fetchBlock({provider: provider, hash: hash});
+    }
+  } else if (args[0] === '--number') {
+    const number = args[1];
+
+    fetchBlock({number: number});
+  } else if (args[0] === '--hash') {
+    const hash = args[1];
+
+    fetchBlock({hash: hash});
+  } else if (!args[0]) {
+    fetchBlock({})
+  } else {
+    console.log('Unknown command.');
 
     process.exit(1);
   }
