@@ -1,3 +1,7 @@
+### Install dependencies
+
+`yarn install`
+
 ### Usage
 
 ```
