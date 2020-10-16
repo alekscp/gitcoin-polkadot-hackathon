@@ -44,21 +44,25 @@ async function backend() {
       '--help: Shows you this menu\n' +
       '--provider: Provider address of a Substrate-based chain; eg.: `ws:localhost:9944`\n' +
       '--number: block number (height)\n' +
-      '--hash: block hash\n'
+      '--hash: block hash\n\n' +
+      'Example:\n\n' +
+      'node backend.js --provider ws://127.0.0.1:9944 --number 1234'
     );
 
     process.exit(0);
   } else if (args[0] === '--provider') {
     const provider = args[1];
 
-    if (args[1] === '--number') {
-      const number = args[2];
+    if (args[2] === '--number') {
+      const number = args[3];
 
       fetchBlock({provider: provider, number: number});
-    } else if (args[1] === '--hash') {
-      const hash = args[2];
+    } else if (args[2] === '--hash') {
+      const hash = args[3];
 
       fetchBlock({provider: provider, hash: hash});
+    } else {
+      fetchBlock({});
     }
   } else if (args[0] === '--number') {
     const number = args[1];
