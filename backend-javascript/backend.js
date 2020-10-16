@@ -50,25 +50,25 @@ async function backend() {
     );
 
     process.exit(0);
-  } else if (args[0] === '--provider') {
+  } else if (args[0] == '--provider') {
     const provider = args[1];
 
-    if (args[2] === '--number') {
+    if (args[2] == '--number') {
       const number = args[3];
 
       fetchBlock({provider: provider, number: number});
-    } else if (args[2] === '--hash') {
+    } else if (args[2] == '--hash') {
       const hash = args[3];
 
       fetchBlock({provider: provider, hash: hash});
     } else {
       fetchBlock({});
     }
-  } else if (args[0] === '--number') {
+  } else if (args[0] == '--number') {
     const number = args[1];
 
     fetchBlock({number: number});
-  } else if (args[0] === '--hash') {
+  } else if (args[0] == '--hash') {
     const hash = args[1];
 
     fetchBlock({hash: hash});
